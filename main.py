@@ -4,10 +4,11 @@ import sa828
 
 def main():
     files = glob.glob("".join(["/dev/tty.", "usbserial*"]))
+    # search serial port on mac or linux.
     if len(files) >0:
         port = files[0]
         myradio=sa828.sa828(port,9600)
-        # Replace 'COM3' with your actual serial port (e.g. '/dev/ttyUSB0' on Linux)
+
 
         myradio.connect()
         if myradio.connected:
