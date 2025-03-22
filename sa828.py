@@ -1,58 +1,16 @@
 #sa828 programming script written by Frank Barton, g7wap
+from os import path
 
+from sa8x8 import sa8x8
 
-
-import serial
-import time
 import re
-class sa828:
+class sa828(sa8x8):
     def __init__(self,comport,baud=9600):
-        self.port_name = comport
-        self.baud_rate = baud
-        self.connected=False
-        self.hasMemories = False
-        self.memories =[]
-        self.channels=[]
-        self.txSubAudio = 0
-        self.rxSubAudio = 0
-        self.squelch = 0
+      super().__init__(comport,baud)
 
 
-    def connect(self):
 
-        try:
-            self.ser = serial.Serial(self.port_name, self.baud_rate, bytesize=8, parity='N', stopbits=1, timeout=1)
-            self.connected = True
-            self.ser.timeout=5000
-        except serial.SerialException as e:
-            print(f"Error opening serial port {self.port_name}: {e}")
-            return
 
-    def send(self,tCommand):
-        if self.connected:
-            self.ser.write(tCommand.encode('ascii'))
-
-        # Wait a little for the response to be received
-            time.sleep(0.5)
-        else :
-            return -1
-    def read(self):
-        if self.connected:
-            response = self.ser.read_until(b"\r\n")
-            buf = response.decode('ascii', errors='replace')
-
-            buf =buf.strip()
-            if buf.startswith("AA"):
-                buf=buf[2:]
-                return buf
-
-            else:
-                return buf
-        else:
-            return -1
-    def close(self):
-        if self.connected:
-            self.ser.close()
 
     def version(self):
         if self.connected:
@@ -82,10 +40,47 @@ class sa828:
             pass
         else:
             return -1
+    def read_file(self,tFilename):
+        self.channels.clear()
 
-    def write_file(self):
-        if self.connected and self.hasMemories:
-            pass
+        if path.exists(tFilename):
+            file = open(tFilename,mode="r")
+            line=file.readline()
+            if line.strip() == "Tx;Rx":
+                for lines in range (0,16):
+                    line=file.readline()
+                    tx,rx=line.strip().split(';')
+                    self.channels.append(tx)
+                    self.channels.append(rx)
+                line = file.readline()
+                if line.strip() == "Tone TX;Tone RX":
+                    self.txSubAudio, self.rxSubAudio=file.readline().strip().split(";")
+
+                line = file.readline().strip()
+                if line.startswith("Squelch"):
+                    self.squelch,_=file.readline().strip().split(';')
+
+                self.hasMemories=True
+            file.close()
+        pass
+
+    def write_file(self,tFilename):
+        if self.hasMemories: # and self.connected :
+
+            file = open(tFilename, mode="w")
+            file.write("Tx;Rx\n")
+            for lines in range(0, 31,2):
+                chn = f"{self.channels[lines]};{self.channels[lines+1]}\n"
+                file.write(chn)
+            file.write("Tone TX;Tone RX\n")
+
+            file.write(f"{self.txSubAudio};{self.rxSubAudio}\n")
+
+            file.write("Squelch;\n")
+            file.write(self.squelch+";\n")
+
+            file.close()
+
         else:
             return -1
         
