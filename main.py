@@ -14,7 +14,7 @@ def main():
         if myradio.connected:
             if myradio.chipset() == "SA828":
                 myradio.read_memories(dumpfile="/Users/frank/Documents/sa828-memories.txt")
-               # myradio.read_file("/Users/frank/Documents/sa828-memories.csv")
+                #myradio.read_file("/Users/frank/Documents/sa828-memories.csv")
 
                 #myradio.write_memories()
 

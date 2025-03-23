@@ -46,8 +46,9 @@ class sa828(sa8x8):
 
 
             cmd = "AAFA3"+buf
-            self.send(cmd+"004,004,1\r\n")
+            self.send(cmd+f"{self.txSubAudio.zfill(3)},{self.rxSubAudio.zfill(3)},{self.squelch}\r\n")
             resonse = self.read()
+            print (resonse)
             pass
         else:
             return -1
