@@ -3,18 +3,15 @@ import sa828
 
 
 def main():
-    files = glob.glob("".join(["/dev/tty.", "usbserial*"]))
-    # search serial port on mac or linux.
-    if len(files) >0:
-        port = files[0]
-        myradio=sa828.sa828(port,9600)
 
+        myradio=sa828.sa828()
+        myradio.read_file("/Users/frank/Documents/sa828-memories-repeaters.csv")
 
         myradio.connect()
         if myradio.connected:
             if myradio.chipset() == "SA828":
                 myradio.read_memories(dumpfile="/Users/frank/Documents/sa828-memories.txt")
-                #myradio.read_file("/Users/frank/Documents/sa828-memories.csv")
+
 
                 #myradio.write_memories()
 

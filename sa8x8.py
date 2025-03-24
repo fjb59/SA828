@@ -1,8 +1,9 @@
 import serial
 import time
+import glob
 
 class sa8x8:
-    def __init__(self,comport,baud=9600):
+    def __init__(self,comport=None,baud=9600):
         self.port_name = comport
         self.baud_rate = baud
         self.connected=False
@@ -12,17 +13,31 @@ class sa8x8:
         self.txSubAudio = 0
         self.rxSubAudio = 0
         self.squelch = 0
+        self.delimiter = ";"
+        self.hasBeenRead = False
+        if comport is None:
+            files = glob.glob("".join(["/dev/tty.", "usbserial*"]))
+            if len(files) > 0:
+                self.port_name = files[0]
+            else:
+                self.port_name = None
+        else:
+            self.port_name = comport
 
 
     def connect(self):
+        if self.port_name is not None:
+            try:
+                self.ser = serial.Serial(self.port_name, self.baud_rate, bytesize=8, parity='N', stopbits=1, timeout=1)
+                self.connected = True
+                # self.ser.timeout=5000
+            except serial.SerialException as e:
+                print(f"Error opening serial port {self.port_name}: {e}")
+                return False
+        else:
+            self.connected = False
 
-        try:
-            self.ser = serial.Serial(self.port_name, self.baud_rate, bytesize=8, parity='N', stopbits=1, timeout=1)
-            self.connected = True
-            # self.ser.timeout=5000
-        except serial.SerialException as e:
-            print(f"Error opening serial port {self.port_name}: {e}")
-            return
+            return False
 
     def send(self, tCommand):
         if self.connected:
